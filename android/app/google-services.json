@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "907168118851",
+    "project_id": "student-portal-66f8f",
+    "storage_bucket": "student-portal-66f8f.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:907168118851:android:235320ce908990295f3cf6",
+        "android_client_info": {
+          "package_name": "com.lucasdennis.student_portal"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC8Qc2b1rhqu-u6Y4pz0tsGB8fA4jmFuYI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
