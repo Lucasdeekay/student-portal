@@ -1,23 +1,24 @@
 import 'package:flutter/material.dart';
-import 'package:student_portal/screens/dashboard.dart';
-import 'package:student_portal/screens/forgot_password.dart';
-import 'package:student_portal/screens/registration.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../components/alert_manager.dart';
 import '../components/route_manager.dart';
+import 'login.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({Key? key}) : super(key: key);
+class ResetPasswordScreen extends StatefulWidget {
+  final String resetToken;
+
+  const ResetPasswordScreen({Key? key, required this.resetToken}) : super(key: key);
 
   @override
-  _LoginScreenState createState() => _LoginScreenState();
+  _ResetPasswordScreenState createState() => _ResetPasswordScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
+  TextEditingController confirmPasswordController = TextEditingController();
   late bool passwordVisibility = false;
+  late bool confirmPasswordVisibility = false;
 
   @override
   Widget build(BuildContext context) {
@@ -96,7 +97,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    'Sign in your account',
+                                    'Change Password',
                                     style: TextStyle(
                                       fontWeight: FontWeight.normal,
                                       fontSize: 32.0,
@@ -108,90 +109,13 @@ class _LoginScreenState extends State<LoginScreen> {
                                     padding: EdgeInsetsDirectional.fromSTEB(
                                         0, 12, 0, 24),
                                     child: Text(
-                                      'Fill out the form below with your credentials.',
+                                      'Enter a strong password',
                                       style: TextStyle(
                                         fontWeight: FontWeight.w500,
                                         fontSize: 14,
                                         color: Colors.grey,
                                         fontFamily: 'Outfit',
                                         letterSpacing: 0,
-                                      ),
-                                    ),
-                                  ),
-                                  Padding(
-                                    padding: EdgeInsetsDirectional.fromSTEB(
-                                        0, 0, 0, 16),
-                                    child: Container(
-                                      width: double.infinity,
-                                      child: TextFormField(
-                                        controller: emailController,
-                                        autofillHints: [AutofillHints.email],
-                                        obscureText: false,
-                                        decoration: InputDecoration(
-                                          labelText: 'Email',
-                                          labelStyle:
-                                          TextStyle(
-                                            fontWeight: FontWeight.w500,
-                                            color: Colors.black,
-                                            fontSize: 16.0,
-                                            fontFamily: 'Outfit',
-                                            letterSpacing: 0,
-                                          ),
-                                          enabledBorder: OutlineInputBorder(
-                                            borderSide: BorderSide(
-                                              color:
-                                              Colors.white,
-                                              width: 2,
-                                            ),
-                                            borderRadius:
-                                            BorderRadius.circular(12),
-                                          ),
-                                          focusedBorder: OutlineInputBorder(
-                                            borderSide: BorderSide(
-                                              color:
-                                              Colors.grey,
-                                              width: 2,
-                                            ),
-                                            borderRadius:
-                                            BorderRadius.circular(12),
-                                          ),
-                                          errorBorder: OutlineInputBorder(
-                                            borderSide: BorderSide(
-                                              color:
-                                              Colors.redAccent,
-                                              width: 2,
-                                            ),
-                                            borderRadius:
-                                            BorderRadius.circular(12),
-                                          ),
-                                          focusedErrorBorder:
-                                          OutlineInputBorder(
-                                            borderSide: BorderSide(
-                                              color:
-                                              Colors.redAccent,
-                                              width: 2,
-                                            ),
-                                            borderRadius:
-                                            BorderRadius.circular(12),
-                                          ),
-                                          filled: true,
-                                          fillColor:
-                                          Colors.grey[100],
-                                        ),
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.w400,
-                                          fontSize: 16.0,
-                                          fontFamily: 'Plus Jakarta Sans',
-                                          letterSpacing: 0,
-                                        ),
-                                        keyboardType:
-                                        TextInputType.emailAddress,
-                                        validator: (value) {
-                                          if (value!.isEmpty) {
-                                            return 'Email is required';
-                                          }
-                                          return null;
-                                        },
                                       ),
                                     ),
                                   ),
@@ -257,7 +181,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                           Colors.grey[100],
                                           suffixIcon: InkWell(
                                             onTap: () => setState(
-                                                () => passwordVisibility = !passwordVisibility
+                                                    () => passwordVisibility = !passwordVisibility
                                             ),
                                             focusNode:
                                             FocusNode(skipTraversal: true),
@@ -282,7 +206,103 @@ class _LoginScreenState extends State<LoginScreen> {
                                         TextInputType.visiblePassword,
                                         validator: (value) {
                                           if (value!.isEmpty) {
-                                            return 'Password is required';
+                                            return 'This field is required';
+                                          }
+                                          return null;
+                                        },
+                                      ),
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: EdgeInsetsDirectional.fromSTEB(
+                                        0, 0, 0, 16),
+                                    child: Container(
+                                      width: double.infinity,
+                                      child: TextFormField(
+                                        controller: confirmPasswordController,
+                                        autofillHints: [AutofillHints.password],
+                                        obscureText: !passwordVisibility,
+                                        textInputAction: TextInputAction.done,
+                                        decoration: InputDecoration(
+                                          labelText: 'Confirm Password',
+                                          labelStyle:
+                                          TextStyle(
+                                            fontWeight: FontWeight.w500,
+                                            color: Colors.black,
+                                            fontSize: 16.0,
+                                            fontFamily: 'Outfit',
+                                            letterSpacing: 0,
+                                          ),
+                                          enabledBorder: OutlineInputBorder(
+                                            borderSide: BorderSide(
+                                              color:
+                                              Colors.white,
+                                              width: 2,
+                                            ),
+                                            borderRadius:
+                                            BorderRadius.circular(12),
+                                          ),
+                                          focusedBorder: OutlineInputBorder(
+                                            borderSide: BorderSide(
+                                              color:
+                                              Colors.grey,
+                                              width: 2,
+                                            ),
+                                            borderRadius:
+                                            BorderRadius.circular(12),
+                                          ),
+                                          errorBorder: OutlineInputBorder(
+                                            borderSide: BorderSide(
+                                              color:
+                                              Colors.redAccent,
+                                              width: 2,
+                                            ),
+                                            borderRadius:
+                                            BorderRadius.circular(12),
+                                          ),
+                                          focusedErrorBorder:
+                                          OutlineInputBorder(
+                                            borderSide: BorderSide(
+                                              color:
+                                              Colors.redAccent,
+                                              width: 2,
+                                            ),
+                                            borderRadius:
+                                            BorderRadius.circular(12),
+                                          ),
+                                          filled: true,
+                                          fillColor:
+                                          Colors.grey[100],
+                                          suffixIcon: InkWell(
+                                            onTap: () => setState(
+                                                    () => passwordVisibility = !passwordVisibility
+                                            ),
+                                            focusNode:
+                                            FocusNode(skipTraversal: true),
+                                            child: Icon(
+                                              passwordVisibility
+                                                  ? Icons.visibility_outlined
+                                                  : Icons
+                                                  .visibility_off_outlined,
+                                              color:
+                                              Colors.black,
+                                              size: 24,
+                                            ),
+                                          ),
+                                        ),
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w400,
+                                          fontSize: 16.0,
+                                          fontFamily: 'Plus Jakarta Sans',
+                                          letterSpacing: 0,
+                                        ),
+                                        keyboardType:
+                                        TextInputType.visiblePassword,
+                                        validator: (value) {
+                                          if (value!.isEmpty) {
+                                            return 'This field is required';
+                                          }else if (value != passwordController.text) {
+                                            return 'Passwords do not match';
                                           }
                                           return null;
                                         },
@@ -297,28 +317,35 @@ class _LoginScreenState extends State<LoginScreen> {
                                         infoFlushbar(context, "Please Wait", "Processing...");
                                         if (_formKey.currentState!.validate()) {
                                           try {
-                                            final UserCredential userCredential =
-                                            await FirebaseAuth.instance
-                                                .signInWithEmailAndPassword(
-                                              email: emailController.text,
-                                              password: passwordController.text,
-                                            );
+                                            String newPassword = passwordController
+                                                .text.trim();
+                                            String confirmPassword = confirmPasswordController
+                                                .text.trim();
 
-                                            if (userCredential.user != null) {
-                                              successFlushbar(
-                                                  context, "Success", "Login successful");
-                                              // Authentication successful, navigate to the homepage.
-                                              Future.delayed(Duration(seconds: 3), () {
-                                                Navigator.of(context)
-                                                    .push(createRoute(DashboardScreen()));
-                                              });
-                                            } else {
-                                              errorFlushbar(
-                                                  context, "Error", "Authentication failed");
+                                            // Validate new password (add your validation logic here)
+                                            if (newPassword.isEmpty ||
+                                                confirmPassword.isEmpty) {
+                                              throw Exception(
+                                                  'Please enter both new password and confirm password.');
                                             }
+                                            if (newPassword !=
+                                                confirmPassword) {
+                                              throw Exception(
+                                                  'New password and confirm password do not match.');
+                                            }
+
+                                            await FirebaseAuth.instance
+                                                .confirmPasswordReset(
+                                              code: widget.resetToken,
+                                              newPassword: newPassword,
+                                            );
+                                            successFlushbar(context, 'Success', 'Password reset email sent!');
+                                            Navigator.of(context).pushAndRemoveUntil(createRoute(LoginScreen()), (route) => false);
+                                            // Navigate to login page or display success message (you decide)
+                                          } on FirebaseAuthException catch (e) {
+                                            errorFlushbar(context, 'Error', 'An error occurred. Please try again.');
                                           } catch (e) {
-                                            errorFlushbar(
-                                                context, "Authentication failed", 'An error occurred. Please try again.');
+                                            errorFlushbar(context, 'Error', 'An error occurred. Please try again.');
                                           }
                                         }
                                       },
@@ -334,7 +361,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                           Padding(
                                             padding: EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
                                             child: Text(
-                                              'Sign In',
+                                              'Create Account',
                                               style: TextStyle(
                                                 color: Colors.white,
                                                 fontSize: 24.0,
@@ -345,209 +372,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                         ],
                                       ),
                                     ),
-                                    // child: FFButtonWidget(
-                                    //   onPressed: () async {
-                                    //     logFirebaseEvent(
-                                    //         'SIGN_UP_SCREEN_CREATE_ACCOUNT_BTN_ON_TAP');
-                                    //     logFirebaseEvent('Button_auth');
-                                    //     GoRouter.of(context).prepareAuthEvent();
-                                    //     if (_model
-                                    //         .passwordTextController.text !=
-                                    //         _model.passwordConfirmTextController
-                                    //             .text) {
-                                    //       ScaffoldMessenger.of(context)
-                                    //           .showSnackBar(
-                                    //         SnackBar(
-                                    //           content: Text(
-                                    //             'Passwords don\'t match!',
-                                    //           ),
-                                    //         ),
-                                    //       );
-                                    //       return;
-                                    //     }
-                                    //
-                                    //     final user = await authManager
-                                    //         .createAccountWithEmail(
-                                    //       context,
-                                    //       _model
-                                    //           .emailAddressTextController.text,
-                                    //       _model.passwordTextController.text,
-                                    //     );
-                                    //     if (user == null) {
-                                    //       return;
-                                    //     }
-                                    //
-                                    //     await UsersRecord.collection
-                                    //         .doc(user.uid)
-                                    //         .update({
-                                    //       ...createUsersRecordData(
-                                    //         displayName: _model
-                                    //             .fullNameTextController.text,
-                                    //         diet: FFAppState().userDiet,
-                                    //       ),
-                                    //       ...mapToFirestore(
-                                    //         {
-                                    //           'allergens':
-                                    //           FFAppState().userAllergens,
-                                    //           'ingredient_dislikes':
-                                    //           FFAppState()
-                                    //               .userIngredientDislikes,
-                                    //         },
-                                    //       ),
-                                    //     });
-                                    //
-                                    //     context.goNamedAuth(
-                                    //         'Dashboard', context.mounted);
-                                    //   },
-                                    //   text: 'Create Account',
-                                    //   options: FFButtonOptions(
-                                    //     width: double.infinity,
-                                    //     height: 44,
-                                    //     padding: EdgeInsetsDirectional.fromSTEB(
-                                    //         0, 0, 0, 0),
-                                    //     iconPadding:
-                                    //     EdgeInsetsDirectional.fromSTEB(
-                                    //         0, 0, 0, 0),
-                                    //     color: FlutterFlowTheme.of(context)
-                                    //         .primary,
-                                    //     textStyle: FlutterFlowTheme.of(context)
-                                    //         .titleSmall
-                                    //         .override(
-                                    //       fontFamily: 'Plus Jakarta Sans',
-                                    //       color: Colors.white,
-                                    //       letterSpacing: 0,
-                                    //     ),
-                                    //     elevation: 3,
-                                    //     borderSide: BorderSide(
-                                    //       color: Colors.transparent,
-                                    //       width: 1,
-                                    //     ),
-                                    //     borderRadius: BorderRadius.circular(12),
-                                    //   ),
-                                    // ),
                                   ),
-                                  Align(
-                                    alignment: AlignmentDirectional(0, 0),
-                                    child: Padding(
-                                      padding: EdgeInsetsDirectional.fromSTEB(
-                                          70, 0, 0, 12),
-                                      child: Row(
-                                        children: [
-                                          Text(
-                                            'Forgot your password?',
-                                            style: TextStyle(
-                                              fontSize: 14.0,
-                                              fontWeight: FontWeight.normal,
-                                              fontFamily: 'Plus Jakarta Sans',
-                                              letterSpacing: 0,
-                                            ),
-                                          ),
-                                          GestureDetector(
-                                            onTap: () => {
-                                              Navigator.of(context).push(createRoute(ForgotPasswordScreen()))
-                                            },
-                                            child: Text(
-                                              ' Retrieve account',
-                                              style: TextStyle(
-                                                fontFamily:
-                                                'Plus Jakarta Sans',
-                                                color: Colors.blueAccent,
-                                                letterSpacing: 0,
-                                                fontWeight: FontWeight.w600,
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                  Padding(
-                                    padding: EdgeInsetsDirectional.fromSTEB(
-                                        0, 0, 0, 24),
-                                    child: Container(
-                                      width: double.infinity,
-                                      child: Stack(
-                                        alignment: AlignmentDirectional(0, 0),
-                                        children: [
-                                          Align(
-                                            alignment:
-                                            AlignmentDirectional(0, 0),
-                                            child: Padding(
-                                              padding: EdgeInsetsDirectional
-                                                  .fromSTEB(0, 12, 0, 12),
-                                              child: Container(
-                                                width: double.infinity,
-                                                height: 2,
-                                                decoration: BoxDecoration(
-                                                  color: Colors.grey,
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                          Align(
-                                            alignment:
-                                            AlignmentDirectional(0, 0),
-                                            child: Container(
-                                              width: 70,
-                                              height: 32,
-                                              decoration: BoxDecoration(
-                                                color:
-                                                Colors.white,
-                                              ),
-                                              alignment:
-                                              AlignmentDirectional(0, 0),
-                                              child: Text(
-                                                'OR',
-                                                style:
-                                                TextStyle(
-                                                  fontSize: 16.0,
-                                                  fontWeight: FontWeight.w500,
-                                                  fontFamily: 'Outfit',
-                                                  color: Colors.grey,
-                                                  letterSpacing: 0,
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                  Align(
-                                    alignment: AlignmentDirectional(0, 0),
-                                    child: Padding(
-                                      padding: EdgeInsetsDirectional.fromSTEB(
-                                          70, 0, 0, 12),
-                                      child: Row(
-                                          children: [
-                                            Text(
-                                              'Don\'t have an account? ',
-                                              style: TextStyle(
-                                                fontSize: 14.0,
-                                                fontWeight: FontWeight.normal,
-                                                fontFamily: 'Plus Jakarta Sans',
-                                                letterSpacing: 0,
-                                              ),
-                                            ),
-                                            GestureDetector(
-                                              onTap: () => {
-                                              Navigator.of(context).pushAndRemoveUntil(createRoute(RegistrationScreen()), (route) => false)
-                                              },
-                                              child: Text(
-                                                ' Sign Up here',
-                                                style: TextStyle(
-                                                  fontFamily:
-                                                  'Plus Jakarta Sans',
-                                                  color: Colors.blueAccent,
-                                                  letterSpacing: 0,
-                                                  fontWeight: FontWeight.w600,
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
                                 ],
                               ),
                             ),

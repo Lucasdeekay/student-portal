@@ -1,23 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:student_portal/screens/dashboard.dart';
-import 'package:student_portal/screens/forgot_password.dart';
 import 'package:student_portal/screens/registration.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../components/alert_manager.dart';
 import '../components/route_manager.dart';
+import 'dart:convert';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({Key? key}) : super(key: key);
+class ForgotPasswordScreen extends StatefulWidget {
+  const ForgotPasswordScreen({Key? key}) : super(key: key);
 
   @override
-  _LoginScreenState createState() => _LoginScreenState();
+  _ForgotPasswordScreenState createState() => _ForgotPasswordScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   TextEditingController emailController = TextEditingController();
-  TextEditingController passwordController = TextEditingController();
-  late bool passwordVisibility = false;
 
   @override
   Widget build(BuildContext context) {
@@ -96,7 +94,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    'Sign in your account',
+                                    'Forgot Password',
                                     style: TextStyle(
                                       fontWeight: FontWeight.normal,
                                       fontSize: 32.0,
@@ -108,7 +106,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                     padding: EdgeInsetsDirectional.fromSTEB(
                                         0, 12, 0, 24),
                                     child: Text(
-                                      'Fill out the form below with your credentials.',
+                                      'Enter your email to recover account',
                                       style: TextStyle(
                                         fontWeight: FontWeight.w500,
                                         fontSize: 14,
@@ -198,127 +196,23 @@ class _LoginScreenState extends State<LoginScreen> {
                                   Padding(
                                     padding: EdgeInsetsDirectional.fromSTEB(
                                         0, 0, 0, 16),
-                                    child: Container(
-                                      width: double.infinity,
-                                      child: TextFormField(
-                                        controller: passwordController,
-                                        autofillHints: [AutofillHints.password],
-                                        obscureText: !passwordVisibility,
-                                        textInputAction: TextInputAction.done,
-                                        decoration: InputDecoration(
-                                          labelText: 'Password',
-                                          labelStyle:
-                                          TextStyle(
-                                            fontWeight: FontWeight.w500,
-                                            color: Colors.black,
-                                            fontSize: 16.0,
-                                            fontFamily: 'Outfit',
-                                            letterSpacing: 0,
-                                          ),
-                                          enabledBorder: OutlineInputBorder(
-                                            borderSide: BorderSide(
-                                              color:
-                                              Colors.white,
-                                              width: 2,
-                                            ),
-                                            borderRadius:
-                                            BorderRadius.circular(12),
-                                          ),
-                                          focusedBorder: OutlineInputBorder(
-                                            borderSide: BorderSide(
-                                              color:
-                                              Colors.grey,
-                                              width: 2,
-                                            ),
-                                            borderRadius:
-                                            BorderRadius.circular(12),
-                                          ),
-                                          errorBorder: OutlineInputBorder(
-                                            borderSide: BorderSide(
-                                              color:
-                                              Colors.redAccent,
-                                              width: 2,
-                                            ),
-                                            borderRadius:
-                                            BorderRadius.circular(12),
-                                          ),
-                                          focusedErrorBorder:
-                                          OutlineInputBorder(
-                                            borderSide: BorderSide(
-                                              color:
-                                              Colors.redAccent,
-                                              width: 2,
-                                            ),
-                                            borderRadius:
-                                            BorderRadius.circular(12),
-                                          ),
-                                          filled: true,
-                                          fillColor:
-                                          Colors.grey[100],
-                                          suffixIcon: InkWell(
-                                            onTap: () => setState(
-                                                () => passwordVisibility = !passwordVisibility
-                                            ),
-                                            focusNode:
-                                            FocusNode(skipTraversal: true),
-                                            child: Icon(
-                                              passwordVisibility
-                                                  ? Icons.visibility_outlined
-                                                  : Icons
-                                                  .visibility_off_outlined,
-                                              color:
-                                              Colors.black,
-                                              size: 24,
-                                            ),
-                                          ),
-                                        ),
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.w400,
-                                          fontSize: 16.0,
-                                          fontFamily: 'Plus Jakarta Sans',
-                                          letterSpacing: 0,
-                                        ),
-                                        keyboardType:
-                                        TextInputType.visiblePassword,
-                                        validator: (value) {
-                                          if (value!.isEmpty) {
-                                            return 'Password is required';
-                                          }
-                                          return null;
-                                        },
-                                      ),
-                                    ),
-                                  ),
-                                  Padding(
-                                    padding: EdgeInsetsDirectional.fromSTEB(
-                                        0, 0, 0, 16),
                                     child: ElevatedButton(
                                       onPressed: () async {
                                         infoFlushbar(context, "Please Wait", "Processing...");
                                         if (_formKey.currentState!.validate()) {
                                           try {
-                                            final UserCredential userCredential =
                                             await FirebaseAuth.instance
-                                                .signInWithEmailAndPassword(
-                                              email: emailController.text,
-                                              password: passwordController.text,
+                                                .sendPasswordResetEmail(
+                                              email: emailController.text
+                                                  .trim(),
                                             );
-
-                                            if (userCredential.user != null) {
-                                              successFlushbar(
-                                                  context, "Success", "Login successful");
-                                              // Authentication successful, navigate to the homepage.
-                                              Future.delayed(Duration(seconds: 3), () {
-                                                Navigator.of(context)
-                                                    .push(createRoute(DashboardScreen()));
-                                              });
+                                            successFlushbar(context, 'Success', 'Password reset email sent!');
+                                          } on FirebaseAuthException catch (e) {
+                                            if (e.code == 'user-not-found') {
+                                              errorFlushbar(context, 'Error', 'The email address is not associated with an account.');
                                             } else {
-                                              errorFlushbar(
-                                                  context, "Error", "Authentication failed");
+                                              errorFlushbar(context, 'Error', 'An error occurred. Please try again.');
                                             }
-                                          } catch (e) {
-                                            errorFlushbar(
-                                                context, "Authentication failed", 'An error occurred. Please try again.');
                                           }
                                         }
                                       },
@@ -444,7 +338,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                           ),
                                           GestureDetector(
                                             onTap: () => {
-                                              Navigator.of(context).push(createRoute(ForgotPasswordScreen()))
+                                              Navigator.of(context).pushAndRemoveUntil(createRoute(RegistrationScreen()), (route) => false)
                                             },
                                             child: Text(
                                               ' Retrieve account',

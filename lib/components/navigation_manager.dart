@@ -123,7 +123,7 @@ Widget BottomBar(BuildContext context, int index){
         Navigator.of(context).push(createRoute(PaymentScreen()));
       } else if (index == 3) {
         // Navigate to Settings
-        Navigator.of(context).push(createRoute(SettingsScreen()));
+        // Navigator.of(context).push(createRoute(SettingsScreen()));
       }
     },
   );

@@ -9,7 +9,7 @@ void successFlushbar(BuildContext context, String title, String message) {
     duration: Duration(seconds: 3), // Set the duration
     icon: Icon(
       Icons.check_circle,
-      size: 28,
+      size: 18,
       color: Colors.white,
     ),
     flushbarPosition: FlushbarPosition.TOP, // Set the position to top
@@ -24,7 +24,7 @@ void errorFlushbar(BuildContext context, String title, String message) {
     duration: Duration(seconds: 3), // Set the duration
     icon: Icon(
       Icons.error,
-      size: 28,
+      size: 18,
       color: Colors.white,
     ),
     flushbarPosition: FlushbarPosition.TOP, // Set the position to top
@@ -39,7 +39,7 @@ void infoFlushbar(BuildContext context, String title, String message) {
     duration: Duration(seconds: 3), // Set the duration
     icon: Icon(
       Icons.info,
-      size: 28,
+      size: 18,
       color: Colors.white,
     ),
     flushbarPosition: FlushbarPosition.TOP, // Set the position to top
