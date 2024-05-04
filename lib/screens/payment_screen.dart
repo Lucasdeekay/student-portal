@@ -53,7 +53,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
   late String email;
   late String image;
 
-  var publicKey = 'pk_test_0f30abd4793da6f7064c7a7fafd0fefa0c9d50d9';
+  var publicKey = '';
   final plugin = PaystackPlugin();
 
   @override
