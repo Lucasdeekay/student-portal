@@ -2,67 +2,24 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart' as http;
+import 'package:student_portal/components/alert_manager.dart';
 import 'dart:convert';
 
-import '../components/navigation_manager.dart';
-import '../components/notification_manager.dart';
-import '../components/profile_manager.dart';
-
-class NotificationItem extends StatelessWidget {
-  final String title;
-  final String content;
-
-  NotificationItem({required this.title, required this.content});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        ListTile(
-          title: Text(
-            title,
-            style: const TextStyle(
-              fontSize: 14.0,
-              fontWeight: FontWeight.w900,
-              fontStyle: FontStyle.italic,
-            ),
-          ),
-          subtitle: Text(
-            content,
-            style: const TextStyle(
-              fontSize: 12.0,
-              fontWeight: FontWeight.w700,
-              fontStyle: FontStyle.normal,
-            ),
-          ),
-          onTap: () {
-            // Handle notification item click
-          },
-        ),
-        const Divider(
-          color: Colors.grey,
-        ),
-      ],
-    );
-  }
-}
+import '../components/drawer.dart';
 
 class NotificationList {
-  final List<NotificationItem> items;
+  final String title;
+  final String content;
+  final String time;
 
-  NotificationList({required this.items});
+  NotificationList({required this.title, required this.content, required this.time});
 
-  factory NotificationList.fromJson(List<dynamic> json) {
-    List<NotificationItem> items = [];
-
-    for (var item in json) {
-      items.add(NotificationItem(
-        title: item['title'],
-        content: item['content'],
-      ));
-    }
-
-    return NotificationList(items: items);
+  factory NotificationList.fromJson(Map<String, dynamic> json) {
+    return NotificationList(
+      title: json['title'],
+      content: json['content'],
+      time: json['time'],
+    );
   }
 }
 
@@ -72,25 +29,30 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
+  String lastName = '';
+  String firstName = '';
   String matricNumber = '';
-  String program = '';
-  NotificationList? notifications;
+  String level = '';
+  String image = '';
+  late String email = '';
+  Future<List<NotificationList>?>? _notifications;
+
 
   @override
   void initState() {
     super.initState();
-    fetchData();
+    _notifications = fetchData();
   }
 
-  Future<void> fetchData() async {
+  Future<List<NotificationList>?> fetchData() async {
     final user = FirebaseAuth.instance.currentUser;
 
     if (user == null) {
       // User not logged in, handle this case
-      return;
+      return null;
     }
 
-    final email = user.email;
+    email = user.email!;
 
     try {
       final response = await http.get(Uri.parse(
@@ -100,97 +62,392 @@ class _DashboardScreenState extends State<DashboardScreen> {
         final data = json.decode(response.body);
 
         setState(() {
+          lastName = data['student']['last_name'];
+          firstName = data['student']['first_name'];
           matricNumber = data['student']['matric_no'];
-          program = data['student']['program'];
-
-          notifications = NotificationList.fromJson(data['notifications']);
+          level = data['student']['level'];
+          image = data['student']['image'];
         });
+
+        final List<dynamic> notifications = data['notifications'];
+
+        return notifications
+            .map((notification) => NotificationList.fromJson(notification))
+            .toList();
       } else {
         // Handle API error
-        print('Failed to load student details');
+        errorFlushbar(context, 'Error', 'Unable to load data. Check your internet connection');
       }
     } catch (e) {
       // Handle other errors
-      print('Error: $e');
+      errorFlushbar(context, 'Error', 'An error occured');
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark);
-
     return Scaffold(
+      drawer: buildDrawer(context, lastName, firstName, email, matricNumber, level, image),
       backgroundColor: Colors.white,
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Custom Top Bar
-            TopBar(context),
-
-            // User Profile Section
-            Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Card(
-                elevation: 2,
-                color: Colors.deepPurple[100],
-                child: Padding(
-                  padding: const EdgeInsets.all(10.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      CardTitle('Bio-data', Icons.person),
-                      const SizedBox(height: 10.0),
-                      Row(
-                        children: [
-                          Image.asset(
-                            'assets/logo.png',
-                            width: 150,
-                            height: 150,
-                          ),
-                          const SizedBox(width: 10),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              ProfileDetail('Matric Number', matricNumber),
-                              ProfileDetail('Program', program),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
+      appBar: AppBar(
+        leading: Builder(
+          builder: (context) => IconButton(
+            icon: Icon(Icons.menu),
+            onPressed: () => Scaffold.of(context).openDrawer(),
+          ),
+        ),
+        backgroundColor: Colors.white,
+        automaticallyImplyLeading: false,
+        title: Text(
+          'Home',
+          style: TextStyle(
+            fontFamily: 'Outfit',
+            color: Colors.black,
+            fontSize: 22,
+            letterSpacing: 0,
+          ),
+        ),
+        actions: [
+          Padding(
+            padding: EdgeInsets.all(8),
+            child: Container(
+              width: 60,
+              height: 60,
+              clipBehavior: Clip.antiAlias,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+              ),
+              child: Image.network(
+                'https://images.unsplash.com/photo-1489980557514-251d61e3eeb6?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8NTR8fHVzZXJ8ZW58MHx8MHx8&auto=format&fit=crop&w=800&q=60',
+                fit: BoxFit.cover,
               ),
             ),
-
-            Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Card(
-                elevation: 2,
-                color: Colors.deepPurple[100],
-                child: Padding(
-                  padding: const EdgeInsets.all(10.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      CardTitle('Notifications', Icons.notifications),
-                      const SizedBox(height: 16.0),
-                      if (notifications == null || notifications!.items.isEmpty)
-                        const Text('No notifications available')
-                      else
-                        Column(
-                          children: notifications!.items,
+          ),
+        ],
+        centerTitle: false,
+        elevation: 0,
+      ),
+      body: SafeArea(
+        top: true,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.max,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: EdgeInsetsDirectional.fromSTEB(16, 12, 16, 0),
+                child: Container(
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    boxShadow: [
+                      BoxShadow(
+                        blurRadius: 4,
+                        color: Color(0x25090F13),
+                        offset: Offset(
+                          0.0,
+                          2,
                         ),
+                      )
                     ],
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Padding(
+                    padding: EdgeInsetsDirectional.fromSTEB(12, 12, 12, 16),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.max,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Good Morning,',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w400,
+                            fontSize: 24.0,
+                            fontFamily: 'Outfit',
+                            letterSpacing: 0,
+                          ),
+                        ),
+                        Text(
+                          '$lastName $firstName',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w500,
+                            fontSize: 16.0,
+                            fontFamily: 'Plus Jakarta Sans',
+                            color: Colors.grey,
+                            letterSpacing: 0,
+                          ),
+                        ),
+                        Divider(
+                          height: 24,
+                          thickness: 2,
+                          color: Colors.grey,
+                        ),
+                        Row(
+                          mainAxisSize: MainAxisSize.max,
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: Column(
+                                mainAxisSize: MainAxisSize.max,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Matric No',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.normal,
+                                      fontSize: 14,
+                                      fontFamily: 'Plus Jakarta Sans',
+                                      letterSpacing: 0,
+                                    ),
+                                  ),
+                                  Text(
+                                    '$matricNumber',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 36.0,
+                                      fontFamily: 'Outfit',
+                                      color: Colors.black,
+                                      letterSpacing: 0,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Expanded(
+                              child: Column(
+                                mainAxisSize: MainAxisSize.max,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Level',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.normal,
+                                      fontSize: 14,
+                                      fontFamily: 'Plus Jakarta Sans',
+                                      letterSpacing: 0,
+                                    ),
+                                  ),
+                                  Row(
+                                    mainAxisSize: MainAxisSize.max,
+                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        '$level',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 36.0,
+                                          fontFamily: 'Outfit',
+                                          color: Colors.black,
+                                          letterSpacing: 0,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
-          ],
+              Padding(
+                padding: EdgeInsetsDirectional.fromSTEB(16, 12, 0, 0),
+                child: Text(
+                  'Today\'s Notifications',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w500,
+                    fontSize: 18,
+                    fontFamily: 'Plus Jakarta Sans',
+                    color: Colors.grey,
+                    letterSpacing: 0,
+                  ),
+                ),
+              ),
+              FutureBuilder<List<NotificationList>?>(
+                  future: _notifications,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(
+                          child: Padding(
+                              padding: EdgeInsets.only(top: 20.0),
+                              child:
+                              CircularProgressIndicator())); // Show a loading indicator.
+                    } else if (snapshot.hasError || snapshot.data == null) {
+                      return Center(
+                        child: Padding(
+                          padding: EdgeInsets.only(top: 20.0),
+                          child: Text(
+                            'Failed to load notifications',
+                            style: TextStyle(
+                              fontWeight: FontWeight.normal,
+                              fontSize: 14,
+                              fontFamily: 'Plus Jakarta Sans',
+                              letterSpacing: 0,
+                            ),
+                          ),
+                        ),
+                      ); // Show an error message.
+                    } else if (snapshot.data!.isEmpty) {
+                      return Center(
+                        child: Padding(
+                          padding: EdgeInsets.only(top: 20.0),
+                          child: Text(
+                            'No new notification available',
+                            style: TextStyle(
+                              fontWeight: FontWeight.normal,
+                              fontSize: 14,
+                              fontFamily: 'Plus Jakarta Sans',
+                              letterSpacing: 0,
+                            ),
+                          ),
+                        ),
+                      );
+                    } else {
+                      final newNotifications = snapshot.data!;
+                      return Column(
+                        children: newNotifications.map((notification) {
+                          return Padding(
+                            padding: EdgeInsetsDirectional.fromSTEB(16, 8, 16, 8),
+                            child: InkWell(
+                              splashColor: Colors.transparent,
+                              focusColor: Colors.transparent,
+                              hoverColor: Colors.transparent,
+                              highlightColor: Colors.transparent,
+                              child: Container(
+                                width: double.infinity,
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Padding(
+                                  padding: EdgeInsetsDirectional.fromSTEB(
+                                      16, 12, 16, 0),
+                                  child: InkWell(
+                                    splashColor: Colors.transparent,
+                                    focusColor: Colors.transparent,
+                                    hoverColor: Colors.transparent,
+                                    highlightColor: Colors.transparent,
+                                    onTap: () async {},
+                                    child: Container(
+                                      width: MediaQuery.sizeOf(context).width,
+                                      height: 100,
+                                      decoration: BoxDecoration(
+                                        color: Colors.grey[50],
+                                        boxShadow: [
+                                          BoxShadow(
+                                            blurRadius: 3,
+                                            color: Colors.grey,
+                                            offset: Offset(
+                                              0.0,
+                                              1,
+                                            ),
+                                          )
+                                        ],
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: Padding(
+                                        padding: EdgeInsets.all(8),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.max,
+                                          children: [
+                                            Padding(
+                                              padding:
+                                              EdgeInsetsDirectional.fromSTEB(
+                                                  0, 1, 1, 1),
+                                              child: ClipRRect(
+                                                borderRadius:
+                                                BorderRadius.circular(8),
+                                                child: Icon(
+                                                  Icons.notifications,
+                                                  size: 24.0,
+                                                  color: Colors.black,
+                                                ),
+                                              ),
+                                            ),
+                                            Expanded(
+                                              child: Padding(
+                                                padding: EdgeInsetsDirectional
+                                                    .fromSTEB(8, 0, 4, 0),
+                                                child: Column(
+                                                  mainAxisSize: MainAxisSize.max,
+                                                  mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                                  crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                      notification.title,
+                                                      style: TextStyle(
+                                                        fontWeight:
+                                                        FontWeight.bold,
+                                                        fontSize: 22.0,
+                                                        fontFamily: 'Outfit',
+                                                        letterSpacing: 0,
+                                                      ),
+                                                    ),
+                                                    Padding(
+                                                      padding:
+                                                      EdgeInsetsDirectional
+                                                          .fromSTEB(
+                                                          0, 4, 8, 0),
+                                                      child: Text(
+                                                        notification.content,
+                                                        textAlign:
+                                                        TextAlign.start,
+                                                        style: TextStyle(
+                                                          fontFamily:
+                                                          'Plus Jakarta Sans',
+                                                          fontSize: 12,
+                                                          letterSpacing: 0,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ),
+                                            Column(
+                                              mainAxisSize: MainAxisSize.max,
+                                              mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                              crossAxisAlignment:
+                                              CrossAxisAlignment.end,
+                                              children: [
+                                                Padding(
+                                                  padding: EdgeInsetsDirectional
+                                                      .fromSTEB(0, 0, 4, 8),
+                                                  child: Text(
+                                                    notification.time,
+                                                    textAlign: TextAlign.end,
+                                                    style: TextStyle(
+                                                      fontFamily:
+                                                      'Plus Jakarta Sans',
+                                                      letterSpacing: 0,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      );
+                    }
+                  }),
+            ],
+          ),
         ),
       ),
-      bottomNavigationBar: BottomBar(context, 0),
     );
   }
 }

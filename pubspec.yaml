@@ -53,7 +53,7 @@ dependencies:
   flutter_svg:
   uuid:
   flutter_paystack: ^1.0.7
-  firebase_dynamic_links:
+  image_picker:
 
 dev_dependencies:
   flutter_test:

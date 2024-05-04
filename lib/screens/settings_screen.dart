@@ -1,230 +1,239 @@
-// import 'dart:convert';
-//
-// import 'package:flutter/material.dart';
-// import 'package:flutter/services.dart'; // Added for system bar color
-// import '../components/alert_manager.dart';
-// import '../components/input_manager.dart';
-// import '../components/notification_manager.dart';
-// import '../components/profile_manager.dart';
-// import '../components/navigation_manager.dart';
-// import 'package:firebase_auth/firebase_auth.dart';
-// import 'package:http/http.dart' as http;
-//
-// class SettingsScreen extends StatefulWidget {
-//   @override
-//   _SettingsScreenState createState() => _SettingsScreenState();
-// }
-//
-// class _SettingsScreenState extends State<SettingsScreen> {
-//   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-//   TextEditingController passwordController = TextEditingController();
-//   TextEditingController confirmPasswordController = TextEditingController();
-//
-//   String lastName = '';
-//   String firstName = '';
-//   String userEmail = '';
-//   String matricNumber = '';
-//   String program = '';
-//   String level = '';
-//
-//   @override
-//   void initState() {
-//     super.initState();
-//     fetchData();
-//   }
-//
-//   Future<void> fetchData() async {
-//     final user = FirebaseAuth.instance.currentUser;
-//
-//     if (user == null) {
-//       // User not logged in, handle this case
-//       return;
-//     }
-//
-//     final email = user.email;
-//
-//     try {
-//       final response = await http.get(Uri.parse('https://demosystem.pythonanywhere.com/student-details/?email=$email'));
-//
-//
-//       if (response.statusCode == 200) {
-//         final data = json.decode(response.body);
-//
-//         setState(() {
-//           lastName = data['student']['last_name'];
-//           firstName = data['student']['first_name'];
-//           matricNumber = data['student']['matric_no'];
-//           userEmail = data['student']['email'];
-//           program = data['student']['program'];
-//           level = data['student']['level'];
-//
-//         });
-//       } else {
-//         // Handle API error
-//         print('Failed to load student details');
-//       }
-//     } catch (e) {
-//       // Handle other errors
-//       print('Error: $e');
-//     }
-//   }
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     // Change system bar color
-//     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark);
-//
-//     return Scaffold(
-//       // Remove the app bar
-//       backgroundColor: Colors.white,
-//       body: SingleChildScrollView(
-//         child: Column(
-//           crossAxisAlignment: CrossAxisAlignment.start,
-//           // Align the content to the start
-//           children: [
-//             // Custom Top Bar
-//             TopBar(context),
-//
-//             // User Profile Section
-//             Padding(
-//               padding: const EdgeInsets.all(20.0),
-//               child: Card(
-//                 elevation: 2,
-//                 color: Colors.deepPurple[100],
-//                 child: Padding(
-//                   padding: const EdgeInsets.all(10.0),
-//                   child: Column(
-//                     crossAxisAlignment: CrossAxisAlignment.stretch,
-//                     children: [
-//                       Center(
-//                           child: Column(
-//                             crossAxisAlignment: CrossAxisAlignment.center,
-//                             children: [
-//                               CardTitle('My Profile', Icons.person),
-//                               const SizedBox(height: 20),
-//                               Padding(
-//                                 padding: const EdgeInsets.symmetric(horizontal: 5.0),
-//                                 child: Row(
-//                                   children: [
-//                                     Column(
-//                                       crossAxisAlignment: CrossAxisAlignment.start,
-//                                       children: [
-//                                         ProfileDetail('Last Name', lastName),
-//                                         ProfileDetail('First Name', firstName),
-//                                         ProfileDetail('Matric Number', matricNumber),
-//                                       ],
-//                                     ),
-//                                     const SizedBox(width: 5.0,),
-//                                     Column(
-//                                       crossAxisAlignment: CrossAxisAlignment.start,
-//                                       children: [
-//                                         ProfileDetail('Email', userEmail),
-//                                         ProfileDetail('Program', program),
-//                                         ProfileDetail('Level', level),
-//                                       ],
-//                                     ),
-//                                   ],
-//                                 ),
-//                               )
-//                             ],
-//                           )
-//                       ),
-//                     ],
-//                   ),
-//                 ),
-//               ),
-//             ),
-//
-//             Padding(
-//               padding: const EdgeInsets.all(20.0),
-//               child: Card(
-//                 elevation: 2,
-//                 color: Colors.deepPurple[100],
-//                 child: Padding(
-//                   padding: const EdgeInsets.all(10.0),
-//                   child: Form(
-//                     // Create a Form widget to handle user input
-//                     key: _formKey, // Define a GlobalKey<FormState> for the form
-//                     child: Column(
-//                       crossAxisAlignment: CrossAxisAlignment.stretch,
-//                       children: [
-//                         CardTitle('Change Password', Icons.settings),
-//                         const SizedBox(height: 16.0),
-//
-//                         // Password Input Field
-//                         buildInputField(
-//                           labelText: 'Password',
-//                           icon: Icons.lock,
-//                           isDateField: false,
-//                           context: context,
-//                           isObscure: true,
-//                           controller: passwordController,
-//                           validator: (value) {
-//                             if (value!.isEmpty) {
-//                               return 'Password is required';
-//                             }
-//                             return null; // Return null if the field is valid
-//                           },
-//                           color: Colors.black,
-//                         ),
-//                         const SizedBox(height: 16.0),
-//
-//                         // Confirm Password Input Field
-//                         buildInputField(
-//                           labelText: 'Confirm Password',
-//                           icon: Icons.lock,
-//                           isDateField: false,
-//                           context: context,
-//                           isObscure: true,
-//                           controller: confirmPasswordController,
-//                           validator: (value) {
-//                             if (value!.isEmpty) {
-//                               return 'Confirm Password is required';
-//                             } else if (value != passwordController.text) {
-//                               return 'Passwords do not match';
-//                             }
-//                             return null; // Return null if the field is valid
-//                           },
-//                           color: Colors.black,
-//                         ),
-//                         const SizedBox(height: 16.0),
-//
-//                         // Submit Button
-//                         ElevatedButton(
-//                           onPressed: () {
-//                             try {
-//                               if (_formKey.currentState!.validate()) {
-//                                 // If the form is valid, change the password in Firebase
-//                                 // You can add your Firebase password change logic here
-//                                 FirebaseAuth.instance.currentUser
-//                                     ?.updatePassword(
-//                                         confirmPasswordController.text);
-//                                 successFlushbar(context, "Success",
-//                                     "Password Successfully Changed");
-//                               }
-//                             } catch (e) {
-//                               errorFlushbar(
-//                                   context, "Error", "An error occurred");
-//                             }
-//                           },
-//                           style: ElevatedButton.styleFrom(
-//                             foregroundColor: Colors.white,
-//                             backgroundColor: Colors.deepPurple,
-//                             elevation: 2,
-//                             minimumSize: const Size(10, 50),
-//                           ),
-//                           child: const Text('Submit'),
-//                         ),
-//                       ],
-//                     ),
-//                   ),
-//                 ),
-//               ),
-//             )
-//           ],
-//         ),
-//       ),
-//       bottomNavigationBar: BottomBar(context, 3),
-//     );
-//   }
-// }
+import 'dart:convert';
+
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:http/http.dart' as http;
+import 'dart:core';
+import 'dart:io';
+
+import 'package:student_portal/components/alert_manager.dart';
+
+class SettingsScreen extends StatefulWidget {
+  const SettingsScreen({super.key});
+
+  @override
+  State<SettingsScreen> createState() =>
+      _SettingsScreenState();
+}
+
+class _SettingsScreenState extends State<SettingsScreen> {
+  late String email = '';
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
+  XFile? _imageFile;
+  String imageUrl = ''; // Stores the uploaded image URL
+
+  Future<void> _pickImage() async {
+    final pickedFile = await ImagePicker().pickImage(
+        source: ImageSource.gallery);
+    setState(() {
+      if (pickedFile != null) {
+        _imageFile = pickedFile;
+      }
+    });
+  }
+
+  Future<void> _uploadImage() async {
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user == null) {
+      // User not logged in, handle this case
+      return null;
+    }
+
+    email = user.email!;
+
+    if (_imageFile == null) return;
+
+    // Replace with your Django API endpoint URL (ensure authentication if needed)
+    var url = Uri.parse(
+        'https://demosystem.pythonanywhere.com/upload_image/$email');
+
+    var request = http.MultipartRequest('POST', url);
+    // Await the result of `http.MultipartFile.fromPath` before adding it to the request
+    var multipartFile = await http.MultipartFile.fromPath(
+        'image', _imageFile!.path);
+    request.files.add(multipartFile);
+    var response = await request.send();
+
+    if (response.statusCode == 200) {
+      // Successful upload
+      final responseData = await response.stream.transform(utf8.decoder).join();
+      setState(() {
+        imageUrl =
+            responseData; // Update imageUrl with the response (e.g., uploaded image URL)
+      });
+    } else {
+      // Handle upload error
+      errorFlushbar(context, "Error", "Error uploading image");
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        automaticallyImplyLeading: false,
+        leading: Builder(
+          builder: (context) =>
+              IconButton(
+                icon: Icon(Icons.arrow_back),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+        ),
+        title: Text(
+          'Profile Setting',
+          style: TextStyle(
+            fontFamily: 'Outfit',
+            color: Colors.black,
+            fontSize: 22,
+            letterSpacing: 0,
+          ),
+        ),
+        actions: [],
+        centerTitle: false,
+        elevation: 0,
+      ),
+      body: SafeArea(
+        top: true,
+        child: Padding(
+          padding: EdgeInsetsDirectional.fromSTEB(16, 12, 16, 0),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.max,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Kindly upload image of your face',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w500,
+                    fontSize: 16.0,
+                    fontFamily: 'Outfit',
+                    color: Colors.grey,
+                    letterSpacing: 0,
+                  ),
+                ),
+                GestureDetector(
+                  onTap: () => {
+                    _pickImage
+                  },
+                  child: Padding(
+                    padding: EdgeInsetsDirectional.fromSTEB(0, 16, 0, 0),
+                    child: Container(
+                      width: double.infinity,
+                      constraints: BoxConstraints(
+                        maxWidth: 500,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: Colors.grey,
+                          width: 2,
+                        ),
+                      ),
+                      child: Padding(
+                        padding: EdgeInsets.all(8),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.max,
+                          children: [
+                            Icon(
+                              Icons.add_a_photo_rounded,
+                              color: Colors.purple,
+                              size: 32,
+                            ),
+                            Padding(
+                              padding:
+                              EdgeInsetsDirectional.fromSTEB(16, 0, 0, 0),
+                              child: Text(
+                                'Select Image',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w400,
+                                  fontSize: 16.0,
+                                  fontFamily: 'Plus Jakarta Sans',
+                                  letterSpacing: 0,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                _imageFile != null
+                    ? Image.file(File(_imageFile!.path))
+                    : const Text('No image selected'),
+                Padding(
+                  padding: EdgeInsetsDirectional.fromSTEB(0, 24, 0, 12),
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      _uploadImage;
+                    },
+                    style: ButtonStyle(
+                      backgroundColor: MaterialStateProperty.all<Color>(
+                          Colors.blueAccent),
+                      fixedSize: MaterialStateProperty.all<Size>(
+                          const Size(double.infinity, 48)),
+                      elevation: MaterialStateProperty.all<double>(4),
+                      shadowColor: MaterialStateProperty.all<Color>(
+                          Colors.white),
+                    ),
+                    child: const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Padding(
+                          padding: EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Padding(
+                                padding: EdgeInsets.only(right: 8.0),
+                                child: Icon(
+                                  Icons.image,
+                                  color: Colors.white,
+                                  size: 16.0,
+                                ),
+                              ),
+                              Text(
+                                'Upload Image',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.white,
+                                  fontSize: 16.0,
+                                  fontStyle: FontStyle.normal,
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      ],
+                    ),
+                  ),
+                ),
+                imageUrl.isNotEmpty
+                    ? Image.network(imageUrl)
+                    : const Text('Image not yet uploaded')
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}

@@ -1,95 +1,73 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_paystack/flutter_paystack.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart' as http;
+import 'package:student_portal/screens/payment_success.dart';
 import 'dart:convert';
 import 'package:uuid/uuid.dart';
 import '../components/alert_manager.dart';
-import '../components/navigation_manager.dart';
-import '../components/notification_manager.dart';
+import '../components/drawer.dart';
 import '../components/route_manager.dart';
 
-class PaymentItem extends StatelessWidget {
+class PaymentList {
   final String amount;
   final String trxId;
+  final String time;
 
-  PaymentItem({required this.amount, required this.trxId});
+  PaymentList({required this.amount, required this.trxId, required this.time});
 
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        ListTile(
-          title: Text(
-            amount,
-            style: const TextStyle(
-              fontSize: 14.0,
-              fontWeight: FontWeight.w900,
-              fontStyle: FontStyle.italic,
-            ),
-          ),
-          subtitle: Text(
-            trxId,
-            style: const TextStyle(
-              fontSize: 12.0,
-              fontWeight: FontWeight.w700,
-              fontStyle: FontStyle.normal,
-            ),
-          ),
-          onTap: () {
-            // Handle notification item click
-          },
-        ),
-        const Divider(
-          color: Colors.grey,
-        ),
-      ],
-    );
+  factory PaymentList.fromJson(Map<String, dynamic> json) {
+     return PaymentList(
+        amount: json['amount'],
+        trxId: json['transaction_id'],
+       time: json['time'],
+      );
   }
 }
 
-class PaymentList {
-  final List<PaymentItem> items;
+class PaymentScreen extends StatefulWidget {final String lastName;
+  final String firstName;
+  final String matricNumber;
+  final String level;
+  final String email;
+  final String image;
+  PaymentScreen({super.key, required this.lastName, required this.firstName, required this.email, required this.matricNumber, required this.level, required this.image});
 
-  PaymentList({required this.items});
 
-  factory PaymentList.fromJson(List<dynamic> json) {
-    List<PaymentItem> items = [];
-
-    for (var item in json) {
-      items.add(PaymentItem(
-        amount: item['amount'],
-        trxId: item['transaction_id'],
-      ));
-    }
-
-    return PaymentList(items: items);
-  }
-}
-
-class PaymentScreen extends StatefulWidget {
   @override
   _PaymentScreenState createState() => _PaymentScreenState();
 }
 
 class _PaymentScreenState extends State<PaymentScreen> {
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   TextEditingController amountController = TextEditingController();
+  String? description;
   String txRef = '';
-
-  String userEmail = '';
   String fullName = '';
-  String student = '';
 
-  PaymentList? payments;
+  Future<List<PaymentList>?>? _transactions;
 
-  var publicKey = '';
+  late String lastName;
+  late String firstName;
+  late String matricNumber;
+  late String level;
+  late String email;
+  late String image;
+
+  var publicKey = 'pk_test_0f30abd4793da6f7064c7a7fafd0fefa0c9d50d9';
   final plugin = PaystackPlugin();
 
   @override
   void initState() {
     super.initState();
-    fetchData();
+    plugin.initialize(publicKey: publicKey);
+    _transactions = fetchData();
     generateTransactionRef();
+    lastName = widget.lastName;
+    firstName = widget.firstName;
+    email = widget.email;
+    matricNumber = widget.matricNumber;
+    level = widget.level;
+    image = widget.image;
   }
 
   void generateTransactionRef() {
@@ -97,131 +75,573 @@ class _PaymentScreenState extends State<PaymentScreen> {
     txRef = uuid.v4();
   }
 
-  Future<void> fetchData() async {
-    final user = FirebaseAuth.instance.currentUser;
-
-    if (user == null) {
-      // User not logged in, handle this case
-      return;
-    }
-
-    final email = user.email;
+  Future<List<PaymentList>?> fetchData() async {
 
     try {
       final response = await http.get(Uri.parse(
-          'https://demosystem.pythonanywhere.com/student-details/?email=$email'));
+          'https://demosystem.pythonanywhere.com/get_transactions/?email=${email}'));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
 
-        setState(() {
-          student = data['student'];
-          userEmail = data['student']['email'];
-          fullName =
-              '${data['student']['last_name']} ${data['student']['first_name']}';
+        final List<dynamic> payments = data['transactions'];
 
-          payments = PaymentList.fromJson(data['transactions']);
-        });
+        return payments.map((payment) => PaymentList.fromJson(payment)).toList();
       } else {
         // Handle API error
-        print('Failed to load student details');
+        errorFlushbar(context, 'Error', 'Unable to load data. Check your internet connection');
       }
     } catch (e) {
       // Handle other errors
-      print('Error: $e');
+      errorFlushbar(context, 'Error', 'An error occured');
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: buildDrawer(context, lastName, firstName, email, matricNumber, level, image),
       backgroundColor: Colors.white,
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Custom Top Bar
-            TopBar(context),
-
-            // Payment Gateway Section
-            Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Card(
-                elevation: 2,
-                color: Colors.deepPurple[100],
-                child: Padding(
-                  padding: const EdgeInsets.all(10.0),
+      appBar: AppBar(
+        leading: Builder(
+          builder: (context) => IconButton(
+            icon: Icon(Icons.menu),
+            onPressed: () => Scaffold.of(context).openDrawer(),
+          ),
+        ),
+        backgroundColor: Colors.white,
+        automaticallyImplyLeading: false,
+        title: Text(
+          'Payment Gateway',
+          style: TextStyle(
+            fontFamily: 'Outfit',
+            color: Colors.black,
+            fontSize: 22,
+            letterSpacing: 0,
+          ),
+        ),
+        centerTitle: false,
+        elevation: 0,
+      ),
+      body: SafeArea(
+        top: true,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.max,
+            children: [
+              Padding(
+                padding: EdgeInsetsDirectional.fromSTEB(16, 12, 16, 0),
+                child: SingleChildScrollView(
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      CardTitle('Payment Gateway', Icons.payment),
-                      const SizedBox(height: 16.0),
-                      Center(
+                      Text(
+                        'Make your payment',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w500,
+                          fontSize: 16.0,
+                          fontFamily: 'Outfit',
+                          color: Colors.grey,
+                          letterSpacing: 0,
+                        ),
+                      ),
+                      Padding(
+                        padding: EdgeInsetsDirectional.fromSTEB(0, 4, 0, 0),
+                        child: Text(
+                          'Payment Form',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w500,
+                            fontSize: 24.0,
+                            fontFamily: 'Outfit',
+                            color: Colors.black,
+                            letterSpacing: 0,
+                          ),
+                        ),
+                      ),
+                      Form(
+                        key: _formKey,
                         child: Column(
                           children: [
-                            TextField(
-                              controller: amountController,
-                              keyboardType: TextInputType.number,
-                              decoration: const InputDecoration(
-                                hintText: 'Amount',
+                            Padding(
+                              padding: EdgeInsetsDirectional.fromSTEB(
+                                  0, 0, 0, 16),
+                              child: Container(
+                                width: double.infinity,
+                                child: DropdownButtonFormField<String>(
+                                  value: description,
+                                  hint: Row(
+                                    children: <Widget>[
+                                      Text(
+                                          'Select Payment Description',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.w400,
+                                            fontSize: 16.0,
+                                            fontFamily: 'Plus Jakarta Sans',
+                                            letterSpacing: 0,
+                                          )
+                                      ),
+                                    ],
+                                  ),
+                                  onChanged: (String? newValue) {
+                                    setState(() {
+                                      description = newValue;
+                                    });
+                                  },
+                                  items: [
+                                    'School Fees',
+                                    'Fine',
+                                  ].map((String desc) {
+                                    return DropdownMenuItem<String>(
+                                      value: desc,
+                                      child: Row(
+                                        children: <Widget>[
+                                          Text(
+                                              desc,
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.w400,
+                                                fontSize: 16.0,
+                                                fontFamily: 'Plus Jakarta Sans',
+                                                letterSpacing: 0,
+                                              )
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  }).toList(),
+                                  dropdownColor: Colors.grey[100],
+                                  decoration: InputDecoration(
+                                    labelStyle:
+                                    TextStyle(
+                                      fontWeight: FontWeight.w500,
+                                      color: Colors.black,
+                                      fontSize: 16.0,
+                                      fontFamily: 'Outfit',
+                                      letterSpacing: 0,
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderSide: BorderSide(
+                                        color:
+                                        Colors.white,
+                                        width: 2,
+                                      ),
+                                      borderRadius:
+                                      BorderRadius.circular(12),
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderSide: BorderSide(
+                                        color:
+                                        Colors.grey,
+                                        width: 2,
+                                      ),
+                                      borderRadius:
+                                      BorderRadius.circular(12),
+                                    ),
+                                    errorBorder: OutlineInputBorder(
+                                      borderSide: BorderSide(
+                                        color:
+                                        Colors.redAccent,
+                                        width: 2,
+                                      ),
+                                      borderRadius:
+                                      BorderRadius.circular(12),
+                                    ),
+                                    focusedErrorBorder:
+                                    OutlineInputBorder(
+                                      borderSide: BorderSide(
+                                        color:
+                                        Colors.redAccent,
+                                        width: 2,
+                                      ),
+                                      borderRadius:
+                                      BorderRadius.circular(12),
+                                    ),
+                                    filled: true,
+                                    fillColor:
+                                    Colors.grey[100],
+                                  ),
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w400,
+                                    fontSize: 16.0,
+                                    fontFamily: 'Plus Jakarta Sans',
+                                    letterSpacing: 0,
+                                  ),
+                                  validator: (value) {
+                                    if (value!.isEmpty) {
+                                      return 'This field is required';
+                                    }
+                                    return null;
+                                  },
+                                ),
                               ),
                             ),
-                            const SizedBox(height: 16.0),
-                            ElevatedButton(
-                              onPressed: () async {
-                                infoFlushbar(context, "Please Wait",
-                                    "Initializing payment...");
-                                await plugin.initialize(publicKey: publicKey);
-                                initiatePayment();
-                              },
-                              style: ButtonStyle(
-                                backgroundColor:
-                                    MaterialStateProperty.all<Color>(
-                                        Colors.deepPurpleAccent),
-                                minimumSize: MaterialStateProperty.all<Size>(
-                                    const Size(200, 50)),
+                            Padding(
+                              padding: EdgeInsetsDirectional.fromSTEB(0, 16, 0, 0),
+                              child:
+                              Column(mainAxisSize: MainAxisSize.max, children: [
+                                TextFormField(
+                                  controller: amountController,
+                                  obscureText: false,
+                                  decoration: InputDecoration(
+                                    labelText: 'Amount',
+                                    labelStyle: TextStyle(
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: 14.0,
+                                      fontFamily: 'Outfit',
+                                      color: Colors.grey,
+                                      letterSpacing: 0,
+                                    ),
+                                    hintStyle: TextStyle(
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: 14.0,
+                                      fontFamily: 'Outfit',
+                                      color: Colors.grey,
+                                      letterSpacing: 0,
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderSide: BorderSide(
+                                        color: Colors.grey,
+                                        width: 2,
+                                      ),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderSide: BorderSide(
+                                        color: Colors.grey,
+                                        width: 2,
+                                      ),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    errorBorder: OutlineInputBorder(
+                                      borderSide: BorderSide(
+                                        color: Colors.redAccent,
+                                        width: 2,
+                                      ),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    focusedErrorBorder: OutlineInputBorder(
+                                      borderSide: BorderSide(
+                                        color: Colors.redAccent,
+                                        width: 2,
+                                      ),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    contentPadding: EdgeInsetsDirectional.fromSTEB(
+                                        16, 12, 16, 12),
+                                  ),
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w400,
+                                    fontSize: 14.0,
+                                    fontFamily: 'Outfit',
+                                    color: Colors.black,
+                                    letterSpacing: 0,
+                                  ),
+                                  cursorColor: Colors.grey,
+                                  validator: (value) {
+                                    if (value!.isEmpty) {
+                                      return 'This field cannot be empty';
+                                    }
+                                    return null;
+                                  },
+                                ),
+                              ]),
+                            ),
+                            Padding(
+                              padding: EdgeInsetsDirectional.fromSTEB(0, 24, 0, 12),
+                              child: ElevatedButton(
+                                onPressed: () async {
+                                  ScaffoldMessenger.of(context)
+                                      .showSnackBar(SnackBar(
+                                    content: Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      crossAxisAlignment: CrossAxisAlignment.center,
+                                      children: [
+                                        Padding(
+                                          padding:
+                                          const EdgeInsets.only(right: 8.0),
+                                          child: Icon(
+                                            Icons.payment,
+                                            size: 16.0,
+                                            color: Colors.blueAccent,
+                                          ),
+                                        ),
+                                        Text(
+                                          'Processing Payment...',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 16.0,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    elevation: 2,
+                                    width: 350.0,
+                                    behavior: SnackBarBehavior.floating,
+                                  ));
+                                  await plugin.initialize(publicKey: publicKey);
+                                  initiatePayment();
+                                },
+                                style: ButtonStyle(
+                                  backgroundColor: MaterialStateProperty.all<Color>(
+                                      Colors.blueAccent),
+                                  fixedSize: MaterialStateProperty.all<Size>(
+                                      const Size(double.infinity, 48)),
+                                  elevation: MaterialStateProperty.all<double>(4),
+                                  shadowColor: MaterialStateProperty.all<Color>(
+                                      Colors.white),
+                                ),
+                                child: const Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Padding(
+                                      padding: EdgeInsetsDirectional.fromSTEB(
+                                          0, 0, 0, 0),
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                        children: [
+                                          Padding(
+                                            padding: EdgeInsets.only(right: 8.0),
+                                            child: Icon(
+                                              Icons.payments,
+                                              color: Colors.white,
+                                              size: 16.0,
+                                            ),
+                                          ),
+                                          Text(
+                                            'Make Payment',
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.w500,
+                                              color: Colors.white,
+                                              fontSize: 16.0,
+                                              fontStyle: FontStyle.normal,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    )
+                                  ],
+                                ),
                               ),
-                              child: const Text('Make Payment',
-                                  style: TextStyle(color: Colors.white)),
                             ),
                           ],
                         ),
+                      ),
+                      Padding(
+                        padding: EdgeInsetsDirectional.fromSTEB(0, 4, 0, 0),
+                        child: Text(
+                          'Payment Transactions',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w500,
+                            fontSize: 24.0,
+                            fontFamily: 'Outfit',
+                            color: Colors.black,
+                            letterSpacing: 0,
+                          ),
+                        ),
+                      ),
+                      Padding(
+                        padding: EdgeInsetsDirectional.fromSTEB(0, 12, 0, 4),
+                        child: Text(
+                          'View recent transactions below',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w500,
+                            fontSize: 16.0,
+                            fontFamily: 'Outfit',
+                            color: Colors.grey,
+                            letterSpacing: 0,
+                          ),
+                        ),
+                      ),
+                      FutureBuilder<List<PaymentList>?>(
+                          future: _transactions,
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState == ConnectionState.waiting) {
+                              return const Center(
+                                  child: Padding(
+                                      padding: EdgeInsets.only(top: 20.0),
+                                      child:
+                                      CircularProgressIndicator())); // Show a loading indicator.
+                            } else if (snapshot.hasError || snapshot.data == null) {
+                              return Center(
+                                child: Padding(
+                                  padding: EdgeInsets.only(top: 20.0),
+                                  child: Text(
+                                    'Failed to load transactions',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.normal,
+                                      fontSize: 14,
+                                      fontFamily: 'Plus Jakarta Sans',
+                                      letterSpacing: 0,
+                                    ),
+                                  ),
+                                ),
+                              ); // Show an error message.
+                            } else if (snapshot.data!.isEmpty) {
+                              return Center(
+                                child: Padding(
+                                  padding: EdgeInsets.only(top: 20.0),
+                                  child: Text(
+                                    'No transaction available',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.normal,
+                                      fontSize: 14,
+                                      fontFamily: 'Plus Jakarta Sans',
+                                      letterSpacing: 0,
+                                    ),
+                                  ),
+                                ),
+                              );
+                            } else {
+                              final transactions = snapshot.data!;
+                              return Column(
+                                children: transactions.map((transaction) {
+                                  return Padding(
+                                    padding: EdgeInsetsDirectional.fromSTEB(16, 8, 16, 8),
+                                    child: InkWell(
+                                      splashColor: Colors.transparent,
+                                      focusColor: Colors.transparent,
+                                      hoverColor: Colors.transparent,
+                                      highlightColor: Colors.transparent,
+                                      child: Container(
+                                        width: double.infinity,
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          borderRadius: BorderRadius.circular(12),
+                                        ),
+                                        child: Padding(
+                                          padding: EdgeInsetsDirectional.fromSTEB(
+                                              16, 12, 16, 0),
+                                          child: InkWell(
+                                            splashColor: Colors.transparent,
+                                            focusColor: Colors.transparent,
+                                            hoverColor: Colors.transparent,
+                                            highlightColor: Colors.transparent,
+                                            onTap: () async {},
+                                            child: Container(
+                                              width: MediaQuery.sizeOf(context).width,
+                                              height: 100,
+                                              decoration: BoxDecoration(
+                                                color: Colors.grey[50],
+                                                boxShadow: [
+                                                  BoxShadow(
+                                                    blurRadius: 3,
+                                                    color: Color(0x411D2429),
+                                                    offset: Offset(
+                                                      0.0,
+                                                      1,
+                                                    ),
+                                                  )
+                                                ],
+                                                borderRadius: BorderRadius.circular(12),
+                                              ),
+                                              child: Padding(
+                                                padding: EdgeInsets.all(8),
+                                                child: Row(
+                                                  mainAxisSize: MainAxisSize.max,
+                                                  children: [
+                                                    Padding(
+                                                      padding:
+                                                      EdgeInsetsDirectional.fromSTEB(
+                                                          0, 1, 1, 1),
+                                                      child: ClipRRect(
+                                                        borderRadius:
+                                                        BorderRadius.circular(8),
+                                                        child: Icon(
+                                                          Icons.payments,
+                                                          size: 16.0,
+                                                          color: Colors.black,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    Expanded(
+                                                      child: Padding(
+                                                        padding: EdgeInsetsDirectional
+                                                            .fromSTEB(8, 0, 4, 0),
+                                                        child: Column(
+                                                          mainAxisSize: MainAxisSize.max,
+                                                          mainAxisAlignment:
+                                                          MainAxisAlignment.center,
+                                                          crossAxisAlignment:
+                                                          CrossAxisAlignment.start,
+                                                          children: [
+                                                            Text(
+                                                              transaction.amount,
+                                                              style: TextStyle(
+                                                                fontWeight:
+                                                                FontWeight.bold,
+                                                                fontSize: 22.0,
+                                                                fontFamily: 'Outfit',
+                                                                letterSpacing: 0,
+                                                              ),
+                                                            ),
+                                                            Padding(
+                                                              padding:
+                                                              EdgeInsetsDirectional
+                                                                  .fromSTEB(
+                                                                  0, 4, 8, 0),
+                                                              child: Text(
+                                                                transaction.trxId,
+                                                                textAlign:
+                                                                TextAlign.start,
+                                                                style: TextStyle(
+                                                                  fontFamily:
+                                                                  'Plus Jakarta Sans',
+                                                                  fontSize: 12,
+                                                                  letterSpacing: 0,
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    Column(
+                                                      mainAxisSize: MainAxisSize.max,
+                                                      mainAxisAlignment:
+                                                      MainAxisAlignment.spaceBetween,
+                                                      crossAxisAlignment:
+                                                      CrossAxisAlignment.end,
+                                                      children: [
+                                                        Padding(
+                                                          padding: EdgeInsetsDirectional
+                                                              .fromSTEB(0, 0, 4, 8),
+                                                          child: Text(
+                                                            transaction.time,
+                                                            textAlign: TextAlign.end,
+                                                            style: TextStyle(
+                                                              fontFamily:
+                                                              'Plus Jakarta Sans',
+                                                              letterSpacing: 0,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                }).toList(),
+                              );
+                            }
+                          }
                       ),
                     ],
                   ),
                 ),
               ),
-            ),
-
-            // Payment Record
-            Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Card(
-                elevation: 2,
-                color: Colors.deepPurple[100],
-                child: Padding(
-                  padding: const EdgeInsets.all(10.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      CardTitle('Payment Records', Icons.money),
-                      const SizedBox(height: 16.0),
-                      if (payments == null || payments!.items.isEmpty)
-                        const Text('No payment record available')
-                      else
-                        Column(
-                          children: payments!.items,
-                        ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
-
       ),
-      bottomNavigationBar: BottomBar(context, 2),
     );
   }
 
@@ -229,7 +649,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
     final amount = amountController.text;
     Charge charge = Charge()
       ..amount = int.parse(amount) * 100
-      ..email = userEmail
+      ..email = email
       ..reference = txRef
       ..currency = 'NGN';
 
@@ -242,30 +662,28 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
       if (response.status == true) {
         // Payment successful
-        savePaymentData(amount, 'Card', txRef);
-        successFlushbar(context, "Success", "Payment Successful");
-        Future.delayed(const Duration(seconds: 3), (){
-          Navigator.of(context).push(createRoute(SuccessScreen()));
-        });
+        savePaymentData(amount, description!, 'Card', txRef);
+        successFlushbar(context, "Success", 'Payment Successful!');
+        Navigator.of(context).push(createRoute(PaymentSuccessScreen()));
       } else {
         // Payment failed
-        errorFlushbar(context, "Payment Error", "${response.message}");
+        errorFlushbar(context, "Error", 'Payment Failed!');
       }
     } catch (e) {
       // Handle payment errors or exceptions
-      errorFlushbar(context, "Payment Error", "$e");
+      errorFlushbar(context, "Error", "An error occured!");
     }
   }
 
-  void savePaymentData(
-      String amount, String method, String transactionId) async {
+  void savePaymentData(String amount, String description, String method, String transactionId) async {
     const apiUrl = 'https://demosystem.pythonanywhere.com/payment/';
     final headers = {'Content-Type': 'application/json'};
     final data = {
-      'email': userEmail,
+      'email': email,
       'amount': amount,
       'method': method,
       'transaction_id': transactionId,
+      'description': description,
     };
 
     final response = await http.post(
@@ -277,34 +695,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
     if (response.statusCode == 201) {
       null;
     } else {
-      errorFlushbar(context, "Error", "Error uploading payment data");
+      errorFlushbar(context, "Error", "Payment Failed! Check your internet connection.");
     }
-  }
-}
-
-class SuccessScreen extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Payment Successful"),
-      ),
-      body: const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.check_circle,
-              size: 100,
-              color: Colors.green,
-            ),
-            Text(
-              "Payment was successful!",
-              style: TextStyle(fontSize: 20),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 }
