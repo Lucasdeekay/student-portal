@@ -2,6 +2,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:student_portal/components/route_manager.dart';
+import 'package:student_portal/screens/chat.dart';
 import 'package:student_portal/screens/payment_screen.dart';
 import 'package:student_portal/screens/profile.dart';
 
@@ -88,7 +89,9 @@ Widget buildDrawer(context, String lastName, String firstName, String email, Str
               letterSpacing: 0,
             ),
           ),
-          onTap: () => {}, // Add your profile picture navigation here
+          onTap: () => {
+            Navigator.of(context).push(createRoute(ChatScreen(lastName: last_name, firstName: first_name, email: email_add, matricNumber: matric_number, level: level_no, image: image_url),))
+          }, // Add your profile picture navigation here
         ),
         Divider(),
         for (int i = 0; i < _screenTitles.length; i++)
