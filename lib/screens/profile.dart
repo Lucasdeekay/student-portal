@@ -154,7 +154,7 @@ class _ProfileScreenState extends State<ProfileScreen>{
                   style: TextStyle(
                     fontSize: 14.0,
                     fontWeight: FontWeight.w500,
-                    color: Colors.grey,
+                    color: Colors.black,
                     fontFamily: 'Outfit',
                     letterSpacing: 0,
                   ),
@@ -167,7 +167,7 @@ class _ProfileScreenState extends State<ProfileScreen>{
                   style: TextStyle(
                     fontSize: 14.0,
                     fontWeight: FontWeight.w500,
-                    color: Colors.grey,
+                    color: Colors.black,
                     fontFamily: 'Outfit',
                     letterSpacing: 0,
                   ),
@@ -215,7 +215,7 @@ class _ProfileScreenState extends State<ProfileScreen>{
                               TextStyle(
                                 fontSize: 16.0,
                                 fontWeight: FontWeight.w500,
-                                color: Colors.grey,
+                                color: Colors.black,
                                 fontFamily: 'Outfit',
                                 letterSpacing: 0,
                               ),
@@ -244,7 +244,7 @@ class _ProfileScreenState extends State<ProfileScreen>{
                   style: TextStyle(
                     fontSize: 14.0,
                     fontWeight: FontWeight.w500,
-                    color: Colors.grey,
+                    color: Colors.black,
                     fontFamily: 'Outfit',
                     letterSpacing: 0,
                   ),
@@ -292,7 +292,7 @@ class _ProfileScreenState extends State<ProfileScreen>{
                               TextStyle(
                                 fontSize: 16.0,
                                 fontWeight: FontWeight.w500,
-                                color: Colors.grey,
+                                color: Colors.black,
                                 fontFamily: 'Outfit',
                                 letterSpacing: 0,
                               ),
@@ -356,7 +356,7 @@ class _ProfileScreenState extends State<ProfileScreen>{
                               TextStyle(
                                 fontSize: 16.0,
                                 fontWeight: FontWeight.w500,
-                                color: Colors.grey,
+                                color: Colors.black,
                                 fontFamily: 'Outfit',
                                 letterSpacing: 0,
                               ),

@@ -122,7 +122,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     fontWeight: FontWeight.w500,
                     fontSize: 16.0,
                     fontFamily: 'Outfit',
-                    color: Colors.grey,
+                    color: Colors.black,
                     letterSpacing: 0,
                   ),
                 ),

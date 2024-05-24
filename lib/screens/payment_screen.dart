@@ -141,7 +141,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                           fontWeight: FontWeight.w500,
                           fontSize: 16.0,
                           fontFamily: 'Outfit',
-                          color: Colors.grey,
+                          color: Colors.black,
                           letterSpacing: 0,
                         ),
                       ),
@@ -208,7 +208,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                                       ),
                                     );
                                   }).toList(),
-                                  dropdownColor: Colors.grey[100],
+                                  dropdownColor: Colors.black,
                                   decoration: InputDecoration(
                                     labelStyle:
                                     TextStyle(
@@ -450,7 +450,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                             fontWeight: FontWeight.w500,
                             fontSize: 16.0,
                             fontFamily: 'Outfit',
-                            color: Colors.grey,
+                            color: Colors.black,
                             letterSpacing: 0,
                           ),
                         ),

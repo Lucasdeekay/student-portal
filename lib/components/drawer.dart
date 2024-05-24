@@ -56,7 +56,7 @@ Widget buildDrawer(context, String lastName, String firstName, String email, Str
             style: TextStyle(
               fontWeight: FontWeight.bold,
               fontFamily: 'Outfit',
-              fontSize: 18,
+              fontSize: 22,
               letterSpacing: 0,
             ),
           ),
@@ -65,7 +65,7 @@ Widget buildDrawer(context, String lastName, String firstName, String email, Str
             style: TextStyle(
               fontWeight: FontWeight.normal,
               fontFamily: 'Outfit',
-              fontSize: 14,
+              fontSize: 18,
               letterSpacing: 0,
             ),
           ),

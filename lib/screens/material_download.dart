@@ -124,7 +124,7 @@ class _CourseMaterialDownloadScreenState extends State<CourseMaterialDownloadScr
                           labelStyle: TextStyle(
                             fontWeight: FontWeight.w500,
                             fontSize: 14.0,
-                            color: Colors.grey,
+                            color: Colors.black,
                             fontFamily: 'Outfit',
                             letterSpacing: 0,
                           ),
@@ -174,6 +174,7 @@ class _CourseMaterialDownloadScreenState extends State<CourseMaterialDownloadScr
                           ),
                         ),
                         style: TextStyle(
+                          color: Colors.black,
                           fontWeight: FontWeight.normal,
                           fontSize: 14.0,
                           fontFamily: 'Plus Jakarta Sans',
