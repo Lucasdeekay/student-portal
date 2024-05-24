@@ -70,11 +70,16 @@ Widget buildDrawer(context, String lastName, String firstName, String email, Str
             ),
           ),
           currentAccountPicture: CircleAvatar(
-            backgroundImage: Image.network(image).image,
+            backgroundImage: Image.network(
+              'https://demosystem.pythonanywhere.com${image}',
+              width: 100,
+              height: 100,
+              fit: BoxFit.cover,
+            ).image,
             backgroundColor: Colors.white,
           ),
           decoration: BoxDecoration(
-            color: Colors.blueAccent,
+            color: Colors.deepPurple,
           ),
         ),
         ListTile(
@@ -128,7 +133,7 @@ Widget buildDrawer(context, String lastName, String firstName, String email, Str
                           child: Icon(
                             Icons.logout,
                             size: 16.0,
-                            color: Colors.blueAccent,
+                            color: Colors.deepPurple,
                           ),
                         ),
                         Text(
@@ -185,7 +190,7 @@ Widget buildDrawer(context, String lastName, String firstName, String email, Str
             },
             style: ButtonStyle(
               backgroundColor: MaterialStateProperty.all<Color>(
-                  Colors.black),
+                  Colors.deepPurple),
               fixedSize: MaterialStateProperty.all<Size>(const Size(50, 34)),
               elevation: MaterialStateProperty.all<double>(2),
               shadowColor: MaterialStateProperty.all<Color>(Colors.white),

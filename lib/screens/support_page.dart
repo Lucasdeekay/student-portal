@@ -274,7 +274,7 @@ class _SupportPageScreenState extends State<SupportPageScreen>{
                                             Icon(
                                               Icons.mail,
                                               size: 16.0,
-                                              color: Colors.blueAccent,
+                                              color: Colors.deepPurple,
                                             ),
                                           ],
                                         ),
@@ -314,7 +314,7 @@ class _SupportPageScreenState extends State<SupportPageScreen>{
                                 },
                                 style: ButtonStyle(
                                   backgroundColor: MaterialStateProperty.all<Color>(
-                                      Colors.blueAccent),
+                                      Colors.deepPurple),
                                   fixedSize: MaterialStateProperty.all<Size>(const Size(double.infinity, 48)),
                                   elevation: MaterialStateProperty.all<double>(4),
                                   shadowColor: MaterialStateProperty.all<Color>(Colors.white),

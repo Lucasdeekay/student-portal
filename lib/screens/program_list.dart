@@ -226,7 +226,7 @@ class _ProgramListScreenState extends State<ProgramListScreen> {
                                     child: Icon(
                                       Icons.rocket_launch,
                                       size: 16.0,
-                                      color: Colors.blueAccent,
+                                      color: Colors.deepPurple,
                                     ),
                                   ),
                                   Text(

@@ -30,7 +30,10 @@ class _ChatScreenState extends State<ChatScreen> {
   late String email;
   late String image;
 
-  final List<Map<String, dynamic>> _messages = [];
+  final List<Map<String, dynamic>> _messages = [{
+    'text': "Welcome to our Learning Assistant Bot.",
+    'isUser': false,
+  }];
 
   void _addMessage(String message, {bool isUser = true}) {
     setState(() {
@@ -42,21 +45,28 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Future<void> _getResponse(String userInput) async {
-    final String apiKey = 'YOUR_API_KEY';
-    final String endpoint =
-        'https://api.openai.com/v1/engines/davinci/completions';
+    final String apiKey = '';
+    final String endpoint = 'https://api.openai.com/v1/chat/completions';
 
     final response = await http.post(Uri.parse(endpoint), headers: {
       'Content-Type': 'application/json',
       'Authorization': 'Bearer $apiKey',
-    }, body: {
-      'prompt': userInput,
-      'max_tokens': '150', // Adjust token length as per your requirement
-    });
+    }, body: json.encode({
+      'model': 'gpt-3.5-turbo',
+      'messages': [
+        {'role': 'system', 'content': 'You are a helpful assistant.'},
+        {'role': 'user', 'content': userInput}
+      ],
+      'max_tokens': 150, // Adjust token length as per your requirement
+    }),
+    );
+
+    print(response.body);
 
     if (response.statusCode == 200) {
       final responseData = json.decode(response.body);
-      final chatResponse = responseData['choices'][0]['text'];
+      final chatResponse = responseData['choices'][0]['message']['content'].trim();
+      print(chatResponse);
       _addMessage(chatResponse, isUser: false);
     } else {
       throw Exception('Failed to load response');
@@ -108,7 +118,9 @@ class _ChatScreenState extends State<ChatScreen> {
                 shape: BoxShape.circle,
               ),
               child: Image.network(
-                image,
+                'https://demosystem.pythonanywhere.com${image}',
+                width: 100,
+                height: 100,
                 fit: BoxFit.cover,
               ),
             ),
@@ -155,233 +167,9 @@ class _ChatScreenState extends State<ChatScreen> {
                   ),
                   Column(
                     children: <Widget>[
-                      Expanded(
-                        child: ListView.builder(
-                          itemCount: _messages.length,
-                          itemBuilder: (context, index) {
-                            final message = _messages[index];
-                            return ListTile(
-                              title: message['isUser']
-                                  ? Padding(
-                                      padding: EdgeInsetsDirectional.fromSTEB(
-                                          0, 12, 0, 0),
-                                      child: Container(
-                                        width:
-                                            MediaQuery.sizeOf(context).width *
-                                                0.96,
-                                        decoration: BoxDecoration(
-                                          color: Colors.white,
-                                          boxShadow: [
-                                            BoxShadow(
-                                              blurRadius: 4,
-                                              color: Color(0x33000000),
-                                              offset: Offset(
-                                                0.0,
-                                                2,
-                                              ),
-                                            )
-                                          ],
-                                          borderRadius:
-                                              BorderRadius.circular(12),
-                                        ),
-                                        child: Padding(
-                                          padding: EdgeInsets.all(2),
-                                          child: SingleChildScrollView(
-                                            child: Column(
-                                              mainAxisSize: MainAxisSize.max,
-                                              children: [
-                                                Padding(
-                                                  padding: EdgeInsetsDirectional
-                                                      .fromSTEB(16, 12, 16, 0),
-                                                  child: Row(
-                                                    mainAxisSize:
-                                                        MainAxisSize.max,
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment.start,
-                                                    children: [
-                                                      Padding(
-                                                        padding:
-                                                            EdgeInsets.all(2),
-                                                        child: Container(
-                                                          width: 25,
-                                                          height: 25,
-                                                          clipBehavior:
-                                                              Clip.antiAlias,
-                                                          decoration:
-                                                              BoxDecoration(
-                                                            shape:
-                                                                BoxShape.circle,
-                                                          ),
-                                                          child: Image.network(
-                                                            image,
-                                                          ),
-                                                        ),
-                                                      ),
-                                                      Text(
-                                                        // '${firstName} ${lastName}',
-                                                        '${firstName} ${lastName}',
-                                                        style: TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          fontFamily: 'Outfit',
-                                                          fontSize: 16,
-                                                          letterSpacing: 0,
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                                Padding(
-                                                  padding: EdgeInsetsDirectional
-                                                      .fromSTEB(16, 4, 16, 12),
-                                                  child: Row(
-                                                    mainAxisSize:
-                                                        MainAxisSize.max,
-                                                    children: [
-                                                      Expanded(
-                                                        child: Text(
-                                                          message['text'],
-                                                          style: TextStyle(
-                                                            fontWeight:
-                                                                FontWeight.w400,
-                                                            color: Colors.black,
-                                                            fontFamily:
-                                                                'Outfit',
-                                                            fontSize: 14,
-                                                            letterSpacing: 0,
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    )
-                                  : Container(
-                                      width: MediaQuery.sizeOf(context).width *
-                                          0.96,
-                                      decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        boxShadow: [
-                                          BoxShadow(
-                                            blurRadius: 4,
-                                            color: Color(0x33000000),
-                                            offset: Offset(
-                                              0.0,
-                                              2,
-                                            ),
-                                          )
-                                        ],
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      child: Padding(
-                                        padding: EdgeInsets.all(2),
-                                        child: SingleChildScrollView(
-                                          child: Column(
-                                            mainAxisSize: MainAxisSize.max,
-                                            children: [
-                                              Padding(
-                                                padding: EdgeInsetsDirectional
-                                                    .fromSTEB(0, 12, 0, 12),
-                                                child: Container(
-                                                  width:
-                                                      MediaQuery.sizeOf(context)
-                                                              .width *
-                                                          0.96,
-                                                  decoration: BoxDecoration(
-                                                    color: Colors.white,
-                                                    boxShadow: [
-                                                      BoxShadow(
-                                                        blurRadius: 4,
-                                                        color:
-                                                            Color(0x33000000),
-                                                        offset: Offset(
-                                                          0.0,
-                                                          2,
-                                                        ),
-                                                      )
-                                                    ],
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            12),
-                                                  ),
-                                                ),
-                                              ),
-                                              Padding(
-                                                padding: EdgeInsetsDirectional
-                                                    .fromSTEB(16, 12, 16, 0),
-                                                child: Row(
-                                                  mainAxisSize:
-                                                      MainAxisSize.max,
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.end,
-                                                  children: [
-                                                    Text(
-                                                      'ChatGPT',
-                                                      style: TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                        fontFamily: 'Outfit',
-                                                        fontSize: 16,
-                                                        letterSpacing: 0,
-                                                      ),
-                                                    ),
-                                                    Padding(
-                                                      padding:
-                                                          EdgeInsets.all(2),
-                                                      child: Container(
-                                                        width: 25,
-                                                        height: 25,
-                                                        clipBehavior:
-                                                            Clip.antiAlias,
-                                                        decoration:
-                                                            BoxDecoration(
-                                                          shape:
-                                                              BoxShape.circle,
-                                                        ),
-                                                        child: Image.asset(
-                                                          'assets/images/userAvatar.png',
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                              Padding(
-                                                padding: EdgeInsetsDirectional
-                                                    .fromSTEB(16, 4, 16, 12),
-                                                child: Row(
-                                                  mainAxisSize:
-                                                      MainAxisSize.max,
-                                                  children: [
-                                                    Expanded(
-                                                      child: Text(
-                                                        message['text'],
-                                                        style: TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.w400,
-                                                          color: Colors.black,
-                                                          fontFamily: 'Outfit',
-                                                          fontSize: 14,
-                                                          letterSpacing: 0,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                            );
-                          },
-                        ),
+                      Padding(
+                        padding: const EdgeInsets.only(left: 8.0, right: 8.0),
+                        child: buildChatList(_messages),
                       ),
                     ],
                   ),
@@ -519,7 +307,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                         left: 10.0, right: 10.0),
                                     child: Icon(
                                       Icons.send,
-                                      color: Colors.blueAccent,
+                                      color: Colors.deepPurple,
                                       size: 28.0,
                                     ),
                                   ),
@@ -536,6 +324,228 @@ class _ChatScreenState extends State<ChatScreen> {
               ],
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget buildChatList(List<Map<String, dynamic>> messages) {
+    List<Widget> chatItems = [];
+
+    for (final message in messages) {
+      if (message['isUser']) {
+        chatItems.add(createUserChatItem(message));
+        _getResponse(message['text']);
+      } else {
+        chatItems.add(createBotChatItem(message));
+      }
+    }
+    return Column(
+      children: chatItems,
+    );
+  }
+
+  Widget createUserChatItem(Map<String, dynamic> message) {
+    return Padding(
+      padding: EdgeInsetsDirectional.fromSTEB(0, 12, 0, 0),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              blurRadius: 4,
+              color: Color(0x33000000),
+              offset: Offset(0.0, 2),
+            )
+          ],
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Padding(
+          padding: EdgeInsets.all(2),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.max,
+              children: [
+                Padding(
+                  padding: EdgeInsetsDirectional.fromSTEB(16, 12, 16, 0),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.max,
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: EdgeInsets.all(2),
+                        child: Container(
+                          width: 25,
+                          height: 25,
+                          clipBehavior: Clip.antiAlias,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                          ),
+                          child: Image.network(
+                            // Replace 'image' with your image url variable
+                            'https://demosystem.pythonanywhere.com${image}',
+                            width: 100,
+                            height: 100,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ),
+                      Text(
+                        // '${firstName} <span class="math-inline">\{lastName\}',
+                        '${firstName} ${lastName}',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'Outfit',
+                          fontSize: 16,
+                          letterSpacing: 0,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsetsDirectional.fromSTEB(16, 4, 16, 12),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.max,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          message['text'],
+                          style: TextStyle(
+                            fontWeight: FontWeight.w400,
+                            color: Colors.black,
+                            fontFamily: 'Outfit',
+                            fontSize: 14,
+                            letterSpacing: 0,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget createBotChatItem(Map<String, dynamic> message) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            blurRadius: 4,
+            color: Color(0x33000000),
+            offset: Offset(
+              0.0,
+              2,
+            ),
+          )
+        ],
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Padding(
+        padding: EdgeInsets.all(2),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.max,
+            children: [
+              Padding(
+                padding: EdgeInsetsDirectional
+                    .fromSTEB(0, 12, 0, 12),
+                child: Container(
+                  width:
+                  MediaQuery.sizeOf(context)
+                      .width *
+                      0.96,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    boxShadow: [
+                      BoxShadow(
+                        blurRadius: 4,
+                        color:
+                        Color(0x33000000),
+                        offset: Offset(
+                          0.0,
+                          2,
+                        ),
+                      )
+                    ],
+                    borderRadius:
+                    BorderRadius.circular(
+                        12),
+                  ),
+                ),
+              ),
+              Padding(
+                padding: EdgeInsetsDirectional
+                    .fromSTEB(16, 12, 16, 0),
+                child: Row(
+                  mainAxisSize:
+                  MainAxisSize.max,
+                  mainAxisAlignment:
+                  MainAxisAlignment.end,
+                  children: [
+                    Text(
+                      'ChatGPT',
+                      style: TextStyle(
+                        fontWeight:
+                        FontWeight.bold,
+                        fontFamily: 'Outfit',
+                        fontSize: 16,
+                        letterSpacing: 0,
+                      ),
+                    ),
+                    Padding(
+                      padding:
+                      EdgeInsets.all(2),
+                      child: Container(
+                        width: 25,
+                        height: 25,
+                        clipBehavior:
+                        Clip.antiAlias,
+                        decoration:
+                        BoxDecoration(
+                          shape:
+                          BoxShape.circle,
+                        ),
+                        child: Image.asset(
+                          'assets/images/userAvatar.png',
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: EdgeInsetsDirectional
+                    .fromSTEB(16, 4, 16, 12),
+                child: Row(
+                  mainAxisSize:
+                  MainAxisSize.max,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        message['text'],
+                        style: TextStyle(
+                          fontWeight:
+                          FontWeight.w400,
+                          color: Colors.black,
+                          fontFamily: 'Outfit',
+                          fontSize: 14,
+                          letterSpacing: 0,
+                        ),
+                        textAlign: TextAlign.end,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

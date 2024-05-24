@@ -86,7 +86,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                     },
                     style: ButtonStyle(
                       backgroundColor: MaterialStateProperty.all<Color>(
-                          Colors.black),
+                          Colors.deepPurple),
                       minimumSize: MaterialStateProperty.all<Size>(const Size(double.infinity, 60)),
                       elevation: MaterialStateProperty.all<double>(0),
                     ),
@@ -138,6 +138,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                             child: Text(
                               ' Log In!',
                               style: TextStyle(
+                                color: Colors.deepPurple,
                                 fontFamily: 'Plus Jakarta Sans',
                                 letterSpacing: 0,
                                 fontWeight: FontWeight.bold,

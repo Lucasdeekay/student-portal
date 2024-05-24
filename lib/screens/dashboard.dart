@@ -55,8 +55,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     email = user.email!;
 
     try {
-      final response = await http.get(Uri.parse(
-          'https://demosystem.pythonanywhere.com/student-details/?email=$email'));
+      final response = await http.get(Uri.parse('https://demosystem.pythonanywhere.com/student-details/?email=$email'));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -71,9 +70,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
         final List<dynamic> notifications = data['notifications'];
 
-        return notifications
-            .map((notification) => NotificationList.fromJson(notification))
-            .toList();
+        return notifications.map((notification) => NotificationList.fromJson(notification)).toList();
       } else {
         // Handle API error
         errorFlushbar(context, 'Error', 'Unable to load data. Check your internet connection');
@@ -118,7 +115,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 shape: BoxShape.circle,
               ),
               child: Image.network(
-                image,
+                'https://demosystem.pythonanywhere.com${image}',
+                width: 100,
+                height: 100,
                 fit: BoxFit.cover,
               ),
             ),

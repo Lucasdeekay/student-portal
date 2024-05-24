@@ -59,15 +59,15 @@ class _PaymentScreenState extends State<PaymentScreen> {
   @override
   void initState() {
     super.initState();
-    plugin.initialize(publicKey: publicKey);
-    _transactions = fetchData();
-    generateTransactionRef();
     lastName = widget.lastName;
     firstName = widget.firstName;
     email = widget.email;
     matricNumber = widget.matricNumber;
     level = widget.level;
     image = widget.image;
+    plugin.initialize(publicKey: publicKey);
+    generateTransactionRef();
+    _transactions = fetchData();
   }
 
   void generateTransactionRef() {
@@ -78,8 +78,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
   Future<List<PaymentList>?> fetchData() async {
 
     try {
-      final response = await http.get(Uri.parse(
-          'https://demosystem.pythonanywhere.com/get_transactions/?email=${email}'));
+      final response = await http.get(Uri.parse('https://demosystem.pythonanywhere.com/get_transactions/?email=${email}'));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -262,6 +261,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                                   ),
                                   style: TextStyle(
                                     fontWeight: FontWeight.w400,
+                                    color: Colors.black,
                                     fontSize: 16.0,
                                     fontFamily: 'Plus Jakarta Sans',
                                     letterSpacing: 0,
@@ -362,7 +362,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                                           child: Icon(
                                             Icons.payment,
                                             size: 16.0,
-                                            color: Colors.blueAccent,
+                                            color: Colors.deepPurple,
                                           ),
                                         ),
                                         Text(
@@ -384,7 +384,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                                 },
                                 style: ButtonStyle(
                                   backgroundColor: MaterialStateProperty.all<Color>(
-                                      Colors.blueAccent),
+                                      Colors.deepPurple),
                                   fixedSize: MaterialStateProperty.all<Size>(
                                       const Size(double.infinity, 48)),
                                   elevation: MaterialStateProperty.all<double>(4),

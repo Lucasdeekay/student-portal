@@ -93,7 +93,10 @@ class _ProfileScreenState extends State<ProfileScreen>{
                         image: DecorationImage(
                           fit: BoxFit.cover,
                           image: Image.network(
-                            'https://images.unsplash.com/photo-1434394354979-a235cd36269d?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MTJ8fG1vdW50YWluc3xlbnwwfHwwfHw%3D&auto=format&fit=crop&w=900&q=60',
+                            'https://scontent.flos3-1.fna.fbcdn.net/v/t1.6435-9/75443020_1726035164195039_5569042702676262912_n.jpg?_nc_cat=102&ccb=1-7&_nc_sid=5f2048&_nc_eui2=AeH5gHDbhD3yvLaepqnajUfhgi2YVMPj2deCLZhUw-PZ19LfWtW38owaD7I3csPNpE068jed6AtypHIKu7jdNB96&_nc_ohc=SVnPErnhee0Q7kNvgE4ff2g&_nc_ht=scontent.flos3-1.fna&cb_e2o_trans=t&oh=00_AYA0swQ7uIAI-C9NbV_pTpgzK1-08fw96LaQuowpjD_RJw&oe=66786CA6',
+                            width: 100,
+                            height: 100,
+                            fit: BoxFit.cover,
                           ).image,
                         ),
                       ),
@@ -106,7 +109,7 @@ class _ProfileScreenState extends State<ProfileScreen>{
                           width: 90,
                           height: 90,
                           decoration: BoxDecoration(
-                            color: Colors.blueAccent,
+                            color: Colors.white,
                             shape: BoxShape.circle,
                             border: Border.all(
                               color: Colors.blue,
@@ -118,7 +121,7 @@ class _ProfileScreenState extends State<ProfileScreen>{
                             child: ClipRRect(
                               borderRadius: BorderRadius.circular(50),
                               child: Image.network(
-                                image,
+                                'https://demosystem.pythonanywhere.com${image}',
                                 width: 100,
                                 height: 100,
                                 fit: BoxFit.cover,
@@ -392,7 +395,7 @@ class _ProfileScreenState extends State<ProfileScreen>{
                                   child: Icon(
                                     Icons.logout,
                                     size: 16.0,
-                                    color: Colors.blueAccent,
+                                    color: Colors.deepPurple,
                                   ),
                                 ),
                                 Text(
@@ -449,7 +452,7 @@ class _ProfileScreenState extends State<ProfileScreen>{
                     },
                     style: ButtonStyle(
                       backgroundColor: MaterialStateProperty.all<Color>(
-                          Colors.black),
+                          Colors.deepPurple),
                       fixedSize: MaterialStateProperty.all<Size>(const Size(350, 44)),
                       elevation: MaterialStateProperty.all<double>(2),
                       shadowColor: MaterialStateProperty.all<Color>(Colors.white),

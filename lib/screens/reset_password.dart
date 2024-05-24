@@ -351,7 +351,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                                       },
                                       style: ButtonStyle(
                                         backgroundColor: MaterialStateProperty.all<Color>(
-                                            Colors.blueAccent),
+                                            Colors.deepPurple),
                                         minimumSize: MaterialStateProperty.all<Size>(const Size(double.infinity, 60)),
                                         elevation: MaterialStateProperty.all<double>(0),
                                       ),

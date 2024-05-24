@@ -282,7 +282,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               style: TextStyle(
                                 fontFamily:
                                 'Plus Jakarta Sans',
-                                color: Colors.blueAccent,
+                                color: Colors.deepPurple,
                                 letterSpacing: 0,
                                 fontWeight: FontWeight.w600,
                               ),
@@ -326,7 +326,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         },
                         style: ButtonStyle(
                           backgroundColor: MaterialStateProperty.all<Color>(
-                              Colors.blueAccent),
+                              Colors.deepPurple),
                           minimumSize: MaterialStateProperty.all<Size>(const Size(double.infinity, 60)),
                           elevation: MaterialStateProperty.all<double>(0),
                         ),
@@ -421,7 +421,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             style: TextStyle(
                               fontFamily:
                               'Plus Jakarta Sans',
-                              color: Colors.blueAccent,
+                              color: Colors.deepPurple,
                               letterSpacing: 0,
                               fontWeight: FontWeight.w600,
                             ),

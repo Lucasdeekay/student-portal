@@ -467,7 +467,7 @@ class _CourseMaterialDownloadScreenState extends State<CourseMaterialDownloadScr
                                                       },
                                                       style: ButtonStyle(
                                                         backgroundColor: MaterialStateProperty.all<Color>(
-                                                            Colors.blueAccent),
+                                                            Colors.deepPurple),
                                                         minimumSize: MaterialStateProperty.all<Size>(const Size(40, 50)),
                                                         elevation: MaterialStateProperty.all<double>(2),
                                                       ),

@@ -175,18 +175,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                   ),
                 ),
-                _imageFile != null
-                    ? Image.file(File(_imageFile!.path))
-                    : const Text('No image selected'),
                 Padding(
                   padding: EdgeInsetsDirectional.fromSTEB(0, 24, 0, 12),
                   child: ElevatedButton(
                     onPressed: () async {
-                      _uploadImage;
+                      await _uploadImage;
                     },
                     style: ButtonStyle(
                       backgroundColor: MaterialStateProperty.all<Color>(
-                          Colors.blueAccent),
+                          Colors.deepPurple),
                       fixedSize: MaterialStateProperty.all<Size>(
                           const Size(double.infinity, 48)),
                       elevation: MaterialStateProperty.all<double>(4),
@@ -226,9 +223,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                   ),
                 ),
-                imageUrl.isNotEmpty
-                    ? Image.network(imageUrl)
-                    : const Text('Image not yet uploaded')
               ],
             ),
           ),
